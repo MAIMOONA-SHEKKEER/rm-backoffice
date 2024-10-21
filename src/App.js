@@ -1,25 +1,48 @@
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+import { BrowserRouter as Router, Routes, Route, Navigate } from "react-router-dom";
+import LoginForm from "./components/LoginForm";
+import DashboardLayout from "./components/DashboardLayout"; // New Layout Component
+import CVQList from "./components/CVQList";
+import PMVQList from "./components/PMVQList";
+import CustomersList from "./components/CustomersList";
+import PropertyManagersList from "./components/PropertyManagers";
+import QueriesList from "./components/Queries";
+import PropertyManagerDetails from "./components/PropertyManagerDetail";
+import CVQListDetail from "./components/CVQListDetail";
+import PMVQListDetail from "./components/PMVQListDetail";
+import QueriesListDetail from "./components/QueriesListDetail";
+import CustomersListDetail from "./components/CustomersListDetail";
 
-function App() {
+const App = () => {
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <Router>
+      <Routes>
+        {/* Public Routes */}
+        <Route path="/login" element={<LoginForm />} />
+        <Route path="/" element={<Navigate to="/login" replace />} />
+
+        {/* Dashboard Layout Routes */}
+        <Route path="/dashboard/*" element={<DashboardLayout />}>
+          <Route index element={<Navigate to="customer-verification" replace />} />
+          <Route path="customer-verification" element={<CVQList />} />
+          <Route path="pm-verification" element={<PMVQList />} />
+          <Route path="customers" element={<CustomersList />} />
+          <Route path="property-managers" element={<PropertyManagersList />} />
+          <Route path="queries" element={<QueriesList />} />
+
+          {/* Detail Pages */}
+          <Route path="property-managers/:id" element={<PropertyManagerDetails />} />
+          <Route path="customer-verification/:id" element={<CVQListDetail />} />
+          <Route path="pm-verification/:id" element={<PMVQListDetail />} />
+          <Route path="queries/:id" element={<QueriesListDetail />} />
+          <Route path="customers/:id" element={<CustomersListDetail />} />
+        </Route>
+
+        {/* Catch-All Redirect */}
+        <Route path="*" element={<Navigate to="/login" replace />} />
+      </Routes>
+    </Router>
   );
-}
+};
 
 export default App;
