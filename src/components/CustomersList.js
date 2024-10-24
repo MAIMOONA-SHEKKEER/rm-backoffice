@@ -1,63 +1,40 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Box } from "@mui/material";
+import { useNavigate } from "react-router-dom";
+import useCustomers from "../hooks/useCustomers";
 import FilterDropdown from "../styled-components/FilterDropdown";
 import AppTable from "./AppTable";
 import StyledHeader from "../styled-components/StyledHeader";
-import { useNavigate } from "react-router-dom";
-import { customerColumns } from "../data/customers";
-import axios from "axios";
 import CustomerModal from "../styled-components/CustomerModal";
 import CustomButton from "../styled-components/CustomButton";
+import SnackbarMessage from "../styled-components/SnackbarMessage";
+import { customerColumns } from "../data/customers";
+import AddIcon from "@mui/icons-material/Add"; // Import Add Icon
+import DownloadIcon from "@mui/icons-material/Download"; // Import Download Icon
 
 const CustomersList = () => {
-  const [customers, setCustomers] = useState([]);
+  const {
+    customers,
+    loading,
+    error,
+    createCustomer,
+    updateCustomer,
+    deleteCustomer,
+  } = useCustomers();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [actionType, setActionType] = useState("");
   const [selectedCustomer, setSelectedCustomer] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const navigate = useNavigate();
 
-  useEffect(() => {
-    fetchCustomers();
-  }, []);
-
-  const fetchCustomers = () => {
-    axios
-      .get("http://localhost:8085/api/customers")
-      .then((response) => setCustomers(response.data))
-      .catch((error) => console.error("Error fetching customers:", error));
-  };
-
-  const createCustomer = async (customerData) => {
-    try {
-      await axios.post("http://localhost:8085/api/customers", customerData);
-      fetchCustomers();
-    } catch (error) {
-      console.error("Error creating customer:", error);
-    }
-  };
-
-  const updateCustomer = async (customerData) => {
-    try {
-      await axios.put(
-        `http://localhost:8085/api/customers/${selectedCustomer.id}`,
-        customerData
-      );
-      fetchCustomers();
-    } catch (error) {
-      console.error("Error updating customer:", error);
-    }
-  };
-
-  const deleteCustomer = async () => {
-    try {
-      await axios.delete(
-        `http://localhost:8085/api/customers/${selectedCustomer.id}`
-      );
-      fetchCustomers();
-    } catch (error) {
-      console.error("Error deleting customer:", error);
-    }
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
   };
 
   const openModal = (type, customer = null) => {
@@ -101,10 +78,38 @@ const CustomersList = () => {
     navigate(`/dashboard/customers/${customer.id}`);
   };
 
+  const handleSubmit = async (data) => {
+    if (actionType === "add") {
+      await createCustomer(data);
+      showSnackbar("Customer created successfully!", "success");
+    } else if (actionType === "edit") {
+      await updateCustomer(selectedCustomer.id, data);
+      showSnackbar("Customer updated successfully!", "success");
+    } else if (actionType === "delete") {
+      await deleteCustomer(selectedCustomer.id);
+      showSnackbar("Customer deleted successfully!", "success");
+    }
+    handleModalClose();
+  };
+
+  const handleDownloadPDF = () => {
+    window.open("http://localhost:8085/api/customers/download", "_blank");
+  };
+
   return (
     <Box sx={{ p: 2, marginLeft: 30 }}>
       <StyledHeader variant="h4">Customers</StyledHeader>
-      <CustomButton text={"Add Customer"} onClick={() => openModal("add")} />
+   
+        <CustomButton
+          text={"Add Customer"}
+          onClick={() => openModal("add")}
+          startIcon={<AddIcon />}
+        />
+        <CustomButton
+          text={"Download PDF"}
+          onClick={handleDownloadPDF}
+          startIcon={<DownloadIcon />}
+        />
       <FilterDropdown
         options={searchOptions}
         label="Search by Name, ID, Phone, or Email"
@@ -117,20 +122,22 @@ const CustomersList = () => {
         onView={handleView}
         onEdit={(customer) => openModal("edit", customer)}
         onDelete={(customer) => openModal("delete", customer)}
+        loading={loading}
       />
       <CustomerModal
         open={modalOpen}
         onClose={handleModalClose}
         customer={selectedCustomer}
-        onSubmit={
-          actionType === "add"
-            ? createCustomer
-            : actionType === "edit"
-            ? updateCustomer
-            : deleteCustomer
-        }
+        onSubmit={handleSubmit}
         actionType={actionType}
       />
+      <SnackbarMessage
+        open={snackbarOpen}
+        onClose={() => setSnackbarOpen(false)}
+        severity={snackbarSeverity}
+        message={snackbarMessage}
+      />
+      {error && <p style={{ color: "red" }}>{error}</p>}
     </Box>
   );
 };

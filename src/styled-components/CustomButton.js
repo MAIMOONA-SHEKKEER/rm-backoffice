@@ -22,7 +22,7 @@ const CustomButton = ({
       disabled={disabled}
       onClick={onClick}
       type={type}
-      sx={{ paddingLeft: pl, paddingRight: pr }}
+      sx={{ marginTop: pl, paddingRight: pr }}
       fullWidth={fullWidth}
       {...otherProps}
     >

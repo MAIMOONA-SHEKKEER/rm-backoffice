@@ -54,6 +54,33 @@ const LoginForm = () => {
       navigate("/dashboard");
     }
   };
+    const handleGenerate = () => {
+      const url = `http://localhost:8085/document?userName=JohnDoe`;
+      window.open(url, '_blank');
+    };
+
+    const downloadPdf = async () => {
+      // try {
+      //   const response = await fetch(`http://localhost:8085/document/pdf?userName=John`);
+    
+      //   if (!response.ok) {
+      //     throw new Error(`HTTP error! status: ${response.status}`);
+      //   }
+    
+      //   const blob = await response.blob();
+      //   const url = window.URL.createObjectURL(blob);
+      //   const link = document.createElement('a');
+      //   link.href = url;
+      //   link.download = 'document.pdf';
+      //   document.body.appendChild(link);
+      //   link.click();
+      //   document.body.removeChild(link);
+      // } catch (error) {
+      //   console.error('Error downloading PDF:', error);
+      // }
+      const url = `http://localhost:8085/document/pdf?userName=John`;
+      window.open(url, '_blank');
+    };
 
   return (
     <StyledWrapper>
@@ -133,6 +160,12 @@ const LoginForm = () => {
           message={successMessage}
         />
       </FormContainer>
+      <button onClick={handleGenerate}>
+      Generate Document
+    </button>
+    <button onClick={downloadPdf}>
+      Download PDF
+    </button>
     </StyledWrapper>
   );
 };

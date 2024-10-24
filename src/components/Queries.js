@@ -1,26 +1,62 @@
 import React, { useMemo, useState } from "react";
 import { Box } from "@mui/material";
-import AppTable from "./AppTable";
-import { queriesColumns, queries } from "../data/queries";
-import FilterDropdown from "../styled-components/FilterDropdown";
-import StyledHeader from "../styled-components/StyledHeader";
 import { useNavigate } from "react-router-dom";
+import useQueries from "../hooks/useQueries"; 
+import FilterDropdown from "../styled-components/FilterDropdown";
+import AppTable from "./AppTable";
+import StyledHeader from "../styled-components/StyledHeader";
+import CustomButton from "../styled-components/CustomButton";
+import SnackbarMessage from "../styled-components/SnackbarMessage";
+import { queriesColumns,queries } from "../data/queries";
+import QueryAddModal from "../styled-components/QueryAddModal";
 
 const QueriesList = () => {
+  const {
+    loading,
+    error,
+    createQuery,
+    updateQuery,
+    deleteQuery,
+  } = useQueries(); 
+
   const [searchQuery, setSearchQuery] = useState("");
+  const [modalOpen, setModalOpen] = useState(false);
+  const [actionType, setActionType] = useState("");
+  const [selectedQuery, setSelectedQuery] = useState(null);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState("");
+  const [snackbarSeverity, setSnackbarSeverity] = useState("success");
   const navigate = useNavigate();
+
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbarMessage(message);
+    setSnackbarSeverity(severity);
+    setSnackbarOpen(true);
+  };
+
+  const openModal = (type, query = null) => {
+    setActionType(type);
+    setSelectedQuery(query);
+    setModalOpen(true);
+  };
+
+  const handleModalClose = () => {
+    setModalOpen(false);
+    setSelectedQuery(null);
+  };
 
   const searchOptions = useMemo(() => {
     return [
       ...new Set(
         queries.flatMap((query) => [
           query.ownerName,
+          query.contactNumber,
           query.status,
           ...query.queries,
         ])
       ),
-    ].filter((option) => option !== undefined && option !== null);
-  }, []);
+    ].filter((option) => option);
+  },[]);
 
   const filteredQueries = useMemo(() => {
     return queries.filter((query) => {
@@ -32,25 +68,65 @@ const QueriesList = () => {
       return (
         query.ownerName.toLowerCase().includes(queryLower) ||
         query.status.toLowerCase().includes(queryLower) ||
-        queriesMatch 
+        queriesMatch
       );
     });
   }, [searchQuery]);
 
-  const handleView = (manager) => {
-    navigate(`/dashboard/queries/${manager.id}`);
+  const handleView = (query) => {
+    navigate(`/dashboard/queries/${query.id}`);
+  };
+
+  const handleSubmit = async (data) => {
+    try {
+      if (actionType === "add") {
+        await createQuery(data);
+        showSnackbar("Query created successfully!", "success");
+      } else if (actionType === "edit") {
+        await updateQuery(selectedQuery.id, data);
+        showSnackbar("Query updated successfully!", "success");
+      } else if (actionType === "delete") {
+        await deleteQuery(selectedQuery.id);
+        showSnackbar("Query deleted successfully!", "success");
+      }
+      handleModalClose();
+    } catch (err) {
+      showSnackbar(err.message || "An error occurred!", "error");
+    }
   };
 
   return (
-    <Box sx={{ p: 2,marginLeft:30 }}>
+    <Box sx={{ p: 2, marginLeft: 30 }}>
       <StyledHeader variant="h4">Queries</StyledHeader>
+      <CustomButton text={"Add Query"} onClick={() => openModal("add")} />
       <FilterDropdown
         options={searchOptions}
         label="Search by Name, Status, or Query"
         value={searchQuery}
         onChange={(event, newValue) => setSearchQuery(newValue || "")}
       />
-      <AppTable columns={queriesColumns} data={filteredQueries} onView={handleView}/>
+      <AppTable
+        columns={queriesColumns}
+        data={filteredQueries}
+        onView={handleView}
+        onEdit={(query) => openModal("edit", query)}
+        onDelete={(query) => openModal("delete", query)}
+        loading={loading}
+      />
+      <QueryAddModal
+        open={modalOpen}
+        onClose={handleModalClose}
+        query={selectedQuery}
+        onSubmit={handleSubmit}
+        actionType={actionType}
+      />
+      <SnackbarMessage
+        open={snackbarOpen}
+        onClose={() => setSnackbarOpen(false)}
+        severity={snackbarSeverity}
+        message={snackbarMessage}
+      />
+      {error && <p style={{ color: "red" }}>{error}</p>}
     </Box>
   );
 };

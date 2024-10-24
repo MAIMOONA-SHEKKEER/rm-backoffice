@@ -1,64 +1,35 @@
-import React, { useEffect, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 import { Box } from "@mui/material";
-import FilterDropdown from "../styled-components/FilterDropdown";
-import AppTable from "./AppTable";
-import StyledHeader from "../styled-components/StyledHeader";
 import { useNavigate } from "react-router-dom";
-import axios from "axios";
-import CustomerModal from "../styled-components/CustomerModal";
+import AppTable from "./AppTable";
+import FilterDropdown from "../styled-components/FilterDropdown";
+import StyledHeader from "../styled-components/StyledHeader";
 import CustomButton from "../styled-components/CustomButton";
+import CustomerModal from "../styled-components/CustomerModal";
+import SnackbarMessage from "../styled-components/SnackbarMessage"; 
 import { propertyManagersColumns } from "../data/propertyMangers";
+import usePropertyManagers from "../hooks/usePropertyManagers";
 
 const PropertyManagers = () => {
-  const [propertyManagers, setPropertyManagers] = useState([]);
+  const {
+    propertyManagers,
+    selectedManager,
+    setSelectedManager,
+    createPropertyManager,
+    updatePropertyManager,
+    deletePropertyManager,
+  } = usePropertyManagers();
+
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [actionType, setActionType] = useState("");
-  const [selectedManager, setSelectedManager] = useState(null);
+  const [snackbar, setSnackbar] = useState({
+    open: false,
+    severity: "success",
+    message: "",
+  }); 
+
   const navigate = useNavigate();
-
-  useEffect(() => {
-    fetchPropertyManagers();
-  }, []);
-
-  const fetchPropertyManagers = () => {
-    axios
-      .get("http://localhost:8085/api/property-managers")
-      .then((response) => setPropertyManagers(response.data))
-      .catch((error) => console.error("Error fetching property managers:", error));
-  };
-
-  const createPropertyManager = async (managerData) => {
-    try {
-      await axios.post("http://localhost:8085/api/property-managers", managerData);
-      fetchPropertyManagers();
-    } catch (error) {
-      console.error("Error creating property manager:", error);
-    }
-  };
-
-  const updatePropertyManager = async (managerData) => {
-    try {
-      await axios.put(
-        `http://localhost:8085/api/property-managers/${selectedManager.id}`,
-        managerData
-      );
-      fetchPropertyManagers();
-    } catch (error) {
-      console.error("Error updating property manager:", error);
-    }
-  };
-
-  const deletePropertyManager = async () => {
-    try {
-      await axios.delete(
-        `http://localhost:8085/api/property-managers/${selectedManager.id}`
-      );
-      fetchPropertyManagers();
-    } catch (error) {
-      console.error("Error deleting property manager:", error);
-    }
-  };
 
   const openModal = (type, manager = null) => {
     setActionType(type);
@@ -71,6 +42,28 @@ const PropertyManagers = () => {
     setSelectedManager(null);
   };
 
+  const showSnackbar = (message, severity = "success") => {
+    setSnackbar({ open: true, severity, message });
+  };
+
+  const handleAction = async (managerData) => {
+    try {
+      if (actionType === "add") {
+        await createPropertyManager(managerData);
+        showSnackbar("Property manager added successfully!");
+      } else if (actionType === "edit") {
+        await updatePropertyManager(managerData);
+        showSnackbar("Property manager updated successfully!");
+      } else if (actionType === "delete") {
+        await deletePropertyManager();
+        showSnackbar("Property manager deleted successfully!");
+      }
+      handleModalClose();
+    } catch (error) {
+      showSnackbar(`Error: ${error.message}`, "error");
+    }
+  };
+
   const searchOptions = useMemo(() => {
     return [
       ...new Set(
@@ -81,7 +74,7 @@ const PropertyManagers = () => {
           manager.email,
         ])
       ),
-    ].filter((option) => option);
+    ].filter(Boolean);
   }, [propertyManagers]);
 
   const filteredPropertyManagers = useMemo(() => {
@@ -90,7 +83,7 @@ const PropertyManagers = () => {
       const queryLower = searchQuery.toLowerCase();
       return (
         manager.name.toLowerCase().includes(queryLower) ||
-        manager.id.toString().toLowerCase().includes(queryLower) ||
+        manager.id.toString().includes(queryLower) ||
         manager.phone.toLowerCase().includes(queryLower) ||
         manager.email.toLowerCase().includes(queryLower)
       );
@@ -104,13 +97,19 @@ const PropertyManagers = () => {
   return (
     <Box sx={{ p: 2, marginLeft: 30 }}>
       <StyledHeader variant="h4">Property Managers</StyledHeader>
-      <CustomButton text={"Add Property Manager"} onClick={() => openModal("add")} />
+
+      <CustomButton
+        text="Add Property Manager"
+        onClick={() => openModal("add")}
+      />
+
       <FilterDropdown
         options={searchOptions}
         label="Search by Name, ID, Phone, or Email"
         value={searchQuery}
         onChange={(event, newValue) => setSearchQuery(newValue || "")}
       />
+
       <AppTable
         columns={propertyManagersColumns}
         data={filteredPropertyManagers}
@@ -118,18 +117,20 @@ const PropertyManagers = () => {
         onEdit={(manager) => openModal("edit", manager)}
         onDelete={(manager) => openModal("delete", manager)}
       />
+
       <CustomerModal
         open={modalOpen}
         onClose={handleModalClose}
         customer={selectedManager}
-        onSubmit={
-          actionType === "add"
-            ? createPropertyManager
-            : actionType === "edit"
-            ? updatePropertyManager
-            : deletePropertyManager
-        }
+        onSubmit={handleAction}
         actionType={actionType}
+      />
+
+      <SnackbarMessage
+        open={snackbar.open}
+        onClose={() => setSnackbar((prev) => ({ ...prev, open: false }))}
+        severity={snackbar.severity}
+        message={snackbar.message}
       />
     </Box>
   );
