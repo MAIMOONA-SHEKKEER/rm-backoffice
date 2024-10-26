@@ -3,12 +3,13 @@ import { Box } from "@mui/material";
 import { useNavigate } from "react-router-dom";
 import AppTable from "./AppTable";
 import FilterDropdown from "../styled-components/FilterDropdown";
-import StyledHeader from "../styled-components/StyledHeader";
-import CustomButton from "../styled-components/CustomButton";
+import AddIcon from "@mui/icons-material/Add";
+import DownloadIcon from "@mui/icons-material/Download";
 import CustomerModal from "../styled-components/CustomerModal";
 import SnackbarMessage from "../styled-components/SnackbarMessage"; 
 import { propertyManagersColumns } from "../data/propertyMangers";
 import usePropertyManagers from "../hooks/usePropertyManagers";
+import PageHeader from "../styled-components/PageHeader";
 
 const PropertyManagers = () => {
   const {
@@ -18,6 +19,7 @@ const PropertyManagers = () => {
     createPropertyManager,
     updatePropertyManager,
     deletePropertyManager,
+    downloadPropertyManagers, // New API call for download
   } = usePropertyManagers();
 
   const [searchQuery, setSearchQuery] = useState("");
@@ -64,6 +66,15 @@ const PropertyManagers = () => {
     }
   };
 
+  const handleDownload = async () => {
+    try {
+      await downloadPropertyManagers();  
+      showSnackbar("Property managers data downloaded successfully!");
+    } catch (error) {
+      showSnackbar(`Error downloading data: ${error.message}`, "error");
+    }
+  };
+
   const searchOptions = useMemo(() => {
     return [
       ...new Set(
@@ -96,13 +107,13 @@ const PropertyManagers = () => {
 
   return (
     <Box sx={{ p: 2, marginLeft: 30 }}>
-      <StyledHeader variant="h4">Property Managers</StyledHeader>
-
-      <CustomButton
-        text="Add Property Manager"
-        onClick={() => openModal("add")}
+     <PageHeader
+        title="Property Managers"
+        buttons={[
+          { text: "Add", onClick: () => openModal("add"), icon: <AddIcon /> },
+          { text: "Download", onClick: handleDownload, icon: <DownloadIcon /> },
+        ]}
       />
-
       <FilterDropdown
         options={searchOptions}
         label="Search by Name, ID, Phone, or Email"

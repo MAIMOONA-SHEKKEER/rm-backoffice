@@ -1,5 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import axiosInstance from "../api/axiosInstance";
+import axios from "axios";
 
 const usePropertyManagers = () => {
   const [propertyManagers, setPropertyManagers] = useState([]);
@@ -50,6 +51,20 @@ const usePropertyManagers = () => {
     }
   };
 
+  const downloadPropertyManagers = async () => {
+    const response = await axios.get("http://localhost:8085/property-managers", {
+      responseType: "blob", 
+    });
+    const url = URL.createObjectURL(new Blob([response.data]));
+    const link = document.createElement("a");
+    link.href = url;
+    link.setAttribute("download", "property_managers.pdf"); 
+    document.body.appendChild(link);
+    link.click();
+    link.remove();
+  };
+
+
   useEffect(() => {
     fetchPropertyManagers();
   }, [fetchPropertyManagers]);
@@ -61,6 +76,7 @@ const usePropertyManagers = () => {
     createPropertyManager,
     updatePropertyManager,
     deletePropertyManager,
+    downloadPropertyManagers,
     loading,
     error,
   };

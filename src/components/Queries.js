@@ -4,21 +4,22 @@ import { useNavigate } from "react-router-dom";
 import useQueries from "../hooks/useQueries"; 
 import FilterDropdown from "../styled-components/FilterDropdown";
 import AppTable from "./AppTable";
-import StyledHeader from "../styled-components/StyledHeader";
-import CustomButton from "../styled-components/CustomButton";
+import AddIcon from "@mui/icons-material/Add";
+import DownloadIcon from "@mui/icons-material/Download";
 import SnackbarMessage from "../styled-components/SnackbarMessage";
-import { queriesColumns,queries } from "../data/queries";
+import { queriesColumns} from "../data/queries";
 import QueryAddModal from "../styled-components/QueryAddModal";
+import PageHeader from "../styled-components/PageHeader";
 
 const QueriesList = () => {
   const {
+    queries,
     loading,
     error,
     createQuery,
     updateQuery,
     deleteQuery,
   } = useQueries(); 
-
   const [searchQuery, setSearchQuery] = useState("");
   const [modalOpen, setModalOpen] = useState(false);
   const [actionType, setActionType] = useState("");
@@ -56,7 +57,7 @@ const QueriesList = () => {
         ])
       ),
     ].filter((option) => option);
-  },[]);
+  },[queries]);
 
   const filteredQueries = useMemo(() => {
     return queries.filter((query) => {
@@ -71,7 +72,7 @@ const QueriesList = () => {
         queriesMatch
       );
     });
-  }, [searchQuery]);
+  }, [searchQuery,queries]);
 
   const handleView = (query) => {
     navigate(`/dashboard/queries/${query.id}`);
@@ -95,10 +96,19 @@ const QueriesList = () => {
     }
   };
 
+  const handleDownloadPDF = () => {
+    window.open("http://localhost:8085/queries", "_blank");
+  };
+
   return (
     <Box sx={{ p: 2, marginLeft: 30 }}>
-      <StyledHeader variant="h4">Queries</StyledHeader>
-      <CustomButton text={"Add Query"} onClick={() => openModal("add")} />
+       <PageHeader
+        title="Queries"
+        buttons={[
+          { text: "Add", onClick: () => openModal("add"), icon: <AddIcon /> },
+          { text: "Download", onClick: handleDownloadPDF, icon: <DownloadIcon /> },
+        ]}
+      />
       <FilterDropdown
         options={searchOptions}
         label="Search by Name, Status, or Query"

@@ -8,10 +8,13 @@ import {
   TableRow,
   Paper,
   IconButton,
+  Chip,
 } from "@mui/material";
 import { Visibility, Edit, Delete } from "@mui/icons-material";
+import { getStatusChip } from "../utils/statusUtils";
 
 const AppTable = ({ columns, data, onView, onEdit, onDelete }) => {
+
   return (
     <TableContainer component={Paper} sx={{ boxShadow: 4, borderRadius: 1 }}>
       <Table>
@@ -58,13 +61,13 @@ const AppTable = ({ columns, data, onView, onEdit, onDelete }) => {
                   {column.id === "action" ? (
                     <>
                       <IconButton
-                        sx={{ color: "#512da8", marginRight: 1 }}
+                        sx={{ color: "#512da8" }}
                         onClick={() => onView(row)}
                       >
                         <Visibility />
                       </IconButton>
                       <IconButton
-                        sx={{ color: "#512da8", marginRight: 1 }}
+                        sx={{ color: "#512da8" }}
                         onClick={() => onEdit(row)}
                       >
                         <Edit />
@@ -76,6 +79,12 @@ const AppTable = ({ columns, data, onView, onEdit, onDelete }) => {
                         <Delete />
                       </IconButton>
                     </>
+                  ) : column.id === "status" ? (
+                    <Chip
+                      label={getStatusChip(row[column.id]).label}
+                      color={getStatusChip(row[column.id]).color}
+                      size="small"
+                    />
                   ) : (
                     row[column.id]
                   )}

@@ -4,13 +4,12 @@ import { useNavigate } from "react-router-dom";
 import useCustomers from "../hooks/useCustomers";
 import FilterDropdown from "../styled-components/FilterDropdown";
 import AppTable from "./AppTable";
-import StyledHeader from "../styled-components/StyledHeader";
 import CustomerModal from "../styled-components/CustomerModal";
-import CustomButton from "../styled-components/CustomButton";
 import SnackbarMessage from "../styled-components/SnackbarMessage";
 import { customerColumns } from "../data/customers";
-import AddIcon from "@mui/icons-material/Add"; // Import Add Icon
-import DownloadIcon from "@mui/icons-material/Download"; // Import Download Icon
+import AddIcon from "@mui/icons-material/Add";
+import DownloadIcon from "@mui/icons-material/Download";
+import PageHeader from "../styled-components/PageHeader";
 
 const CustomersList = () => {
   const {
@@ -93,23 +92,18 @@ const CustomersList = () => {
   };
 
   const handleDownloadPDF = () => {
-    window.open("http://localhost:8085/api/customers/download", "_blank");
+    window.open("http://localhost:8085/customers", "_blank");
   };
 
   return (
     <Box sx={{ p: 2, marginLeft: 30 }}>
-      <StyledHeader variant="h4">Customers</StyledHeader>
-   
-        <CustomButton
-          text={"Add Customer"}
-          onClick={() => openModal("add")}
-          startIcon={<AddIcon />}
-        />
-        <CustomButton
-          text={"Download PDF"}
-          onClick={handleDownloadPDF}
-          startIcon={<DownloadIcon />}
-        />
+    <PageHeader
+        title="Customers"
+        buttons={[
+          { text: "Add", onClick: () => openModal("add"), icon: <AddIcon /> },
+          { text: "Download", onClick: handleDownloadPDF, icon: <DownloadIcon /> },
+        ]}
+      />
       <FilterDropdown
         options={searchOptions}
         label="Search by Name, ID, Phone, or Email"
