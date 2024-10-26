@@ -12,25 +12,26 @@ import CVQListDetail from "./components/CVQListDetail";
 import PMVQListDetail from "./components/PMVQListDetail";
 import QueriesListDetail from "./components/QueriesListDetail";
 import CustomersListDetail from "./components/CustomersListDetail";
+import ExtraComponent from "./components/ExtraComponent";
+import RegistrationForm from "./components/RegisterForm";
 
 const App = () => {
   return (
     <Router>
       <Routes>
-        {/* Public Routes */}
         <Route path="/login" element={<LoginForm />} />
         <Route path="/" element={<Navigate to="/login" replace />} />
-
-        {/* Dashboard Layout Routes */}
+        <Route path="extra" element={<ExtraComponent />} />
+       < Route path="/register" element={<RegistrationForm/>} />
+        
         <Route path="/dashboard/*" element={<DashboardLayout />}>
-          <Route index element={<Navigate to="customer-verification" replace />} />
+          <Route index element={<Navigate to="customers" replace />} />
           <Route path="customer-verification" element={<CVQList />} />
           <Route path="pm-verification" element={<PMVQList />} />
           <Route path="customers" element={<CustomersList />} />
           <Route path="property-managers" element={<PropertyManagersList />} />
           <Route path="queries" element={<QueriesList />} />
 
-          {/* Detail Pages */}
           <Route path="property-managers/:id" element={<PropertyManagerDetails />} />
           <Route path="customer-verification/:id" element={<CVQListDetail />} />
           <Route path="pm-verification/:id" element={<PMVQListDetail />} />

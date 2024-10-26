@@ -97,11 +97,15 @@ const CustomersList = () => {
 
   return (
     <Box sx={{ p: 2, marginLeft: 30 }}>
-    <PageHeader
+      <PageHeader
         title="Customers"
         buttons={[
           { text: "Add", onClick: () => openModal("add"), icon: <AddIcon /> },
-          { text: "Download", onClick: handleDownloadPDF, icon: <DownloadIcon /> },
+          {
+            text: "Download",
+            onClick: handleDownloadPDF,
+            icon: <DownloadIcon />,
+          },
         ]}
       />
       <FilterDropdown
@@ -118,6 +122,7 @@ const CustomersList = () => {
         onDelete={(customer) => openModal("delete", customer)}
         loading={loading}
       />
+
       <CustomerModal
         open={modalOpen}
         onClose={handleModalClose}

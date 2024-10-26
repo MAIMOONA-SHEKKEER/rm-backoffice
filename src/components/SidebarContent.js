@@ -17,7 +17,7 @@ import { useNavigate } from "react-router-dom";
 const SidebarContent = ({ handleLogout }) => {
   const [menuItems, setMenuItems] = useState([]);
   const [loading, setLoading] = useState(true);
-  const navigate = useNavigate(); // Use navigate for route handling
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchMenuItems = async () => {
